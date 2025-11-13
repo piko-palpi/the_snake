@@ -46,12 +46,19 @@ class Apple(GameObject):
         self.body_color = RED
         self.randomize_position()
 
-    def randomize_position(self):
-        """Устанавливает случайное положение яблока на поле."""
-        self.position = (
-            random.randint(0, GRID_WIDTH - 1) * CELL_SIZE,
-            random.randint(0, GRID_HEIGHT - 1) * CELL_SIZE
-        )
+    def randomize_position(self, snake_positions=None):
+        """
+        Устанавливает случайное положение яблока на поле,
+        избегая клеток, занятых змейкой.
+        """
+        while True:
+            new_pos = (
+                random.randint(0, GRID_WIDTH - 1) * CELL_SIZE,
+                random.randint(0, GRID_HEIGHT - 1) * CELL_SIZE,
+            )
+            if not snake_positions or new_pos not in snake_positions:
+                self.position = new_pos
+                break
 
     def draw(self, surface):
         """Отрисовывает яблоко на игровом поле."""
@@ -92,11 +99,10 @@ class Snake(GameObject):
         dx, dy = self.direction
         new_x = (cur_x + dx) % FIELD_WIDTH   # проход через стены
         new_y = (cur_y + dy) % FIELD_HEIGHT
-
         new_head = (new_x, new_y)
 
         # Проверка столкновения с собой
-        if new_head in self.positions[2:]:
+        if new_head in self.positions[:-1]:
             self.reset()
             return
 
@@ -105,7 +111,7 @@ class Snake(GameObject):
             self.positions.pop()
 
     def draw(self, surface):
-        """Отрисовывает змейку и затирает её след."""
+        """Отрисовывает змейку."""
         for pos in self.positions:
             rect = pygame.Rect(pos[0], pos[1], CELL_SIZE, CELL_SIZE)
             pygame.draw.rect(surface, self.body_color, rect)
@@ -138,7 +144,7 @@ def handle_keys(snake):
 
 # -------------------- Основной игровой цикл --------------------
 def main():
-    """Главная функция игры."""
+    """Главная функция игры. Запускает игровой цикл."""
     pygame.init()
     screen = pygame.display.set_mode((FIELD_WIDTH, FIELD_HEIGHT))
     pygame.display.set_caption("Изгиб Питона")
@@ -154,7 +160,7 @@ def main():
         # Проверка съедания яблока
         if snake.get_head_position() == apple.position:
             snake.length += 1
-            apple.randomize_position()
+            apple.randomize_position(snake.positions)
 
         # Отрисовка
         screen.fill(BLACK)
