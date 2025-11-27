@@ -25,7 +25,7 @@ SPEED = 20
 class GameObject:
     """Базовый игровой объект."""
 
-    def __init__(self, body_color= tuple, position= tuple):
+    def __init__(self, body_color=tuple, position=tuple):
         """
         Инициализация игрового объекта.
 
